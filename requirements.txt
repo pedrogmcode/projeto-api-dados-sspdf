@@ -1,0 +1,14 @@
+#Dependencias principais
+fastapi == 0.115.4
+uvicorn[standard] == 0.32.0
+pydantic == 2.9.2
+pandas == 2.3.3
+
+#Dependencias de teste
+pytest == 8.3.3
+pytest-cov == 6.0.0
+httpx == 0.27.2         
+
+#Logs
+python-json-logger == 2.0.7
+
