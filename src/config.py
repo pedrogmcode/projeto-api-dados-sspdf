@@ -3,26 +3,16 @@ Configuracoes da aplicacao
 Centraliza as variáveis de configuração
 '''
 
-from pydantic_settings import BaseSettings
+from pathlib import Path
 
-class Settings(BaseSettings):
-    '''
-    Configurações da API
-    '''
+'''
+Configurações da API
+'''
+# Caminhos
+BASE_DIR = Path(__file__).parent.parent
+DATA_DIR = BASE_DIR / "src" / "data" / "DadosOcorrencias.xlsx"
 
-    # Informações da API
-    app_name: str = "API de Gerenciamento de Tarefas"
-    app_version: str = "1.0.0"
-
-    # Configurações de servidor
-    host: str = "0.0.0.0"
-    port: int = 8000
-
-    #Modo de desenvolvimento
-    debug: bool = True
-
-    class Config:
-        env_file = ".env" # Pode usar arquivo .env para variáveis
-
-# Instância global de configurações
-settings = Settings()
+# Informações da API
+API_TITLE = "API de Consulta Estatística"
+API_VERSION = "1.0.0"
+API_DESCRIPTION = "API para consultar estatísticas de ocorrências"
