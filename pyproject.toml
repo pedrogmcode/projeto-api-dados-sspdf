@@ -1,0 +1,41 @@
+[tool.black]
+# Define o tamanho máximo de linha (padrão 88)
+line-length = 88
+# Define a versão mínima do Python
+target-version = ['py312']
+
+[tool.ruff]
+# Deve ser o mesmo do Black
+line-length = 88
+# Regras essenciais (F=Pyflakes, E=pycodestyle, W=Warnings, I=Imports)
+select = ["F", "E", "W", "I"]
+# Ignora a regra E501 (tamanho da linha) pois o Black a controla
+ignore = ["E501"]
+# Exclui diretórios que não contêm código de produção
+exclude = [
+    ".git",
+    "__pycache__",
+    "venv",
+    "logs",
+    "artifacts",
+]
+
+[tool.ruff.per-file-ignores]
+# Ignora imports não utilizados em arquivos __init__.py (que costumam ser vazios)
+"__init__.py" = ["F401"]
+
+[tool.mypy]
+# Garante a verificação de todas as definições de código
+check_untyped_defs = true
+# Ignora verificação de tipos em bibliotecas externas (para evitar erros em bibliotecas não tipadas)
+ignore_missing_imports = true
+# Define o diretório a ser verificado
+files = "src"
+# Níveis de rigor (Warnings)
+warn_return-any = true
+warn_unreachable = true
+exclude = [
+    "venv",
+    "logs",
+    "artifacts",
+]
