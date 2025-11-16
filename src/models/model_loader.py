@@ -1,6 +1,6 @@
 # Arquivo: src/models/model_loader.py
 
-#from functools import lru_cache
+from functools import lru_cache
 from typing import List
 
 import pandas as pd
@@ -9,7 +9,7 @@ from src.config import DATA_DIR, logger
 from src.data.schemas import OcorrenciasRequest, OcorrenciasResponse
 
 
-#@lru_cache(maxsize=1)
+@lru_cache(maxsize=1)
 def load_data_ocorrencias() -> pd.DataFrame:
     """
     Carrega o dataset de ocorrências do DF em memória.
