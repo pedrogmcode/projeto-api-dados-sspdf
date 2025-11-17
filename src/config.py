@@ -1,12 +1,10 @@
-'''
-Configuracoes da aplicacao
-Centraliza as variáveis de configuração
-'''
+# src/config.py
+# Configurações da aplicação - centralização de variáveis de configuração
+# Autor: Casimiro
+# Data: 2025-11-17
 
 import logging
 from pathlib import Path
-
-#CONFIGURAÇÕES DA API
 
 # CAMINHOS
 # Diretório base do projeto
