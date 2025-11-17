@@ -3,7 +3,6 @@ Configuracoes da aplicacao
 Centraliza as variáveis de configuração
 '''
 
-from pathlib import Path
 import logging
 from pathlib import Path
 
@@ -23,7 +22,7 @@ API_DESCRIPTION = "API para consultar informações sobre ocorrências"
 
 # Configurações de logging
 # Nível de log padrão
-LOG_LEVEL = logging.INFO 
+LOG_LEVEL = logging.INFO
 # Formato do log
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 # Diretório de logs
