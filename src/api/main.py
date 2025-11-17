@@ -1,4 +1,7 @@
 # Arquivo: main.py
+# Ponto de entrada da API FastAPI para dados de segurança pública
+# Autor: Casimiro
+# Data: 2025-11-15
 
 from typing import List
 
@@ -38,16 +41,12 @@ def health_check():
 # Em um projeto real, esta função consultaria o DataFrame ou um modelo.
 
 # Endpoint de Ocorrências (Requisição POST)
+# Recebe Mês e Ano, e retorna uma lista de ocorrências filtradas.
 @app.post("/Ocorrencias", response_model=List[OcorrenciasResponse])
 def Ocorrencias(input_data: OcorrenciasRequest):
-    """
-    Consulta o DataFrame carregado e retorna as ocorrências filtradas por Mês e Ano.
-    """
     logger.info(f"Ocorrências solicitadas com Mês: {input_data.Mes}, Ano: {input_data.Ano}")
-    
-    # 1. Chama a função de filtragem
+    # Chama a função de filtragem
     ocorrencias_filtradas = filter_ocorrencias(input_data)
-    
-    # 2. Retorna a lista de objetos Pydantic
-    # Nota: Alteramos o response_model do decorador para List[OcorrenciasResponse]
+    # Retorna a lista de objetos Pydantic
+    # Alteramos o response_model do decorador para List[OcorrenciasResponse]
     return ocorrencias_filtradas
