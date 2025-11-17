@@ -9,27 +9,25 @@ from src.config import DATA_DIR, logger
 from src.data.schemas import OcorrenciasRequest, OcorrenciasResponse
 
 
+# Carrega o dataset de ocorrências do DF em memória.
+# Retorna um DataFrame com nomes de colunas padronizados (snake_case).
 @lru_cache(maxsize=1)
 def load_data_ocorrencias() -> pd.DataFrame:
-    """
-    Carrega o dataset de ocorrências do DF em memória.
-    Retorna um DataFrame com nomes de colunas padronizados (snake_case).
-    """
     logger.info(f"Tentando carregar dados do caminho: {DATA_DIR}")
     try:
-        # 1. Carregamento: Usando sep=';' conforme o seu CSV
-        df = pd.read_csv(DATA_DIR, sep=';', encoding='utf-8') 
-        
-        # 2. Padronização: minúsculo e snake_case para acesso seguro
+        # Carregamento usando sep=';' conforme CSV
+        df = pd.read_csv(DATA_DIR, sep=';', encoding='utf-8')
+
+        # Padronização: minúsculo e snake_case para acesso seguro
         df.columns = df.columns.str.lower().str.replace(' ', '_')
-        
-        # 3. Conversão de Tipos: Necessário para o filtro
+
+        # Conversão de Tipos: Necessário para o filtro
         df['mes'] = df['mes'].astype(int)
         df['ano'] = df['ano'].astype(int)
-        
+        # Loga número de linhas carregadas
         logger.info(f"Dados de ocorrências carregados com sucesso: {df.shape[0]} linhas.")
         return df
-        
+
     except FileNotFoundError:
         # Trata o erro de não encontrar o CSV (causa mais comum do erro 500)
         logger.error(f"ERRO: Arquivo CSV não encontrado em {DATA_DIR}. Verifique o caminho.")
@@ -43,39 +41,44 @@ def load_data_ocorrencias() -> pd.DataFrame:
         logger.error(f"ERRO inesperado ao carregar ou processar CSV: {e}")
         return pd.DataFrame()
 
+# Filtrar DataFrame carregado com base no Mês e Ano da requisição
+# Converter os resultados filtrados para o formato Pydantic.
 
+# Função de filtragem
+# Recebe o objeto de requisição Pydantic
+# Retorna uma lista de objetos Pydantic
 def filter_ocorrencias(request: OcorrenciasRequest) -> List[OcorrenciasResponse]:
-    """
-    Filtra o DataFrame carregado com base no Mês e Ano da requisição
-    e converte os resultados filtrados para o formato Pydantic.
-    """
+
+    # Carrega o DataFrame (usando cache para eficiência)
     df_ocorrencias = load_data_ocorrencias()
-    
-    # 1. Verificação de Segurança (Se o carregamento falhou, retorna lista vazia)
+
+    # Verifica por Segurança se o carregamento falhou, retorna lista vazia
     if df_ocorrencias.empty:
         return []
-    
-    # 2. Aplicar Filtro: Usa as colunas padronizadas ('mes' e 'ano')
+
+    # Aplicar Filtro: Usa as colunas padronizadas ('mes' e 'ano')
     df_filtrado = df_ocorrencias[
-        (df_ocorrencias['mes'] == request.Mes) & 
-        (df_ocorrencias['ano'] == request.Ano)
-    ].copy() # O .copy() é uma boa prática para evitar warnings do Pandas
-    
+        (df_ocorrencias['mes'] == request.Mes) & (df_ocorrencias['ano'] == request.Ano)
+    ].copy() # .copy() é uma boa prática para evitar warnings do Pandas
+
+    # Loga número de registros encontrados
     logger.info(f"Encontrados {len(df_filtrado)} registros para {request.Mes}/{request.Ano}.")
-    
-    # 3. Renomear e Selecionar Colunas para o Pydantic (CapCase)
-    # Mapeia colunas do Pandas (snake_case) para o Pydantic (CapCase)
-    df_filtrado = df_filtrado.rename(columns={
-        'natureza': 'Natureza', 
-        'mes': 'Mes', 
-        'ano': 'Ano'
-    })
-    
+
+    # Renomear e Selecionar Colunas para o Pydantic
+    # Mapeia colunas do Pandas para o Pydantic
+    df_filtrado = df_filtrado[['id', 'natureza', 'mes', 'ano', 'quantidade']].rename(
+    columns={
+        'natureza': 'Natureza',
+        'mes': 'Mes',
+        'ano': 'Ano',
+        'quantidade': 'Quantidade'
+            })
+
     # Seleciona apenas as colunas que o Pydantic espera (id, Natureza, Mes, Ano)
-    dados_filtrados_dict = df_filtrado[['id', 'Natureza', 'Mes', 'Ano']].to_dict('records')
-    
-    # 4. Cria os objetos Pydantic
+    dados_filtrados_dict = df_filtrado.to_dict('records')
+
+    # Criar os objetos Pydantic
     # Garante que cada item da lista está validado pelo OcorrenciasResponse
     response_list = [OcorrenciasResponse(**item) for item in dados_filtrados_dict]
-    
+
     return response_list
