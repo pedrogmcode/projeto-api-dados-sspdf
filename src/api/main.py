@@ -36,7 +36,29 @@ def health_check():
         "version": API_VERSION
     }
 
-# Endpoint de Ocorrências (Requisição POST)
+# Endpoint de Ocorrências (Requisição GET)
+# Recebe Mês e Ano como query parameters, e retorna uma lista de ocorrências filtradas.
+@app.get("/Ocorrencias", response_model=List[OcorrenciasResponse])
+# FastAPI usa os parâmetros da URL para validar o Esquema Pydantic!
+# A função recebe Mes e Ano diretamente, mas a validação do Pydantic (ge, le) funciona.
+def Ocorrencias(Mes: int,Ano: int):
+    logger.info(f"Ocorrências solicitadas com Mês: {Mes}, Ano: {Ano}")
+
+    # Adaptar a Requisição para a Função de Filtragem
+    # A função filter_ocorrencias espera um objeto OcorrenciasRequest,
+    # Necessário criar a partir dos parâmetros de consulta (Mes, Ano).
+    request_data = OcorrenciasRequest(Mes=Mes, Ano=Ano)
+
+    # Chamar a função de filtragem
+    ocorrencias_filtradas = filter_ocorrencias(request_data)
+
+    # Retorna a lista de objetos Pydantic
+    return ocorrencias_filtradas
+
+'''
+# Inutilizado por Casimiro em 17-11-2025
+
+# Endpoint de Ocorrências (POST)
 # Recebe Mês e Ano, e retorna um exemplo de ocorrência validada.
 # Em um projeto real, esta função consultaria o DataFrame ou um modelo.
 
@@ -50,3 +72,4 @@ def Ocorrencias(input_data: OcorrenciasRequest):
     # Retorna a lista de objetos Pydantic
     # Alteramos o response_model do decorador para List[OcorrenciasResponse]
     return ocorrencias_filtradas
+'''
