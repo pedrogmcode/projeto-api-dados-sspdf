@@ -6,7 +6,7 @@ from typing import List
 import pandas as pd
 
 from src.config import DATA_DIR, logger
-from src.data.schemas import OcorrenciasRequest, OcorrenciasResponse
+from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse
 
 
 # Carrega o dataset de ocorrências do DF em memória.
@@ -82,3 +82,27 @@ def filter_ocorrencias(request: OcorrenciasRequest) -> List[OcorrenciasResponse]
     response_list = [OcorrenciasResponse(**item) for item in dados_filtrados_dict]
 
     return response_list
+
+# Função para inserir novos dados no CSV
+def save_new_record(new_df: pd.DataFrame):
+    """
+    Insere o DataFrame no arquivo CSV, usando o modo 'append'.
+    """
+    try:
+        # Escreve o novo DataFrame no arquivo
+        new_df.to_csv(
+            DATA_DIR, 
+            mode='a', # Abre o arquivo em modo 'append' (adicionar ao final)
+            sep=';', 
+            encoding='utf-8', 
+            header=False, # Não escreve o cabeçalho novamente
+            index=False   # Não escreve o índice do DataFrame
+        )
+        # Limpa o cache do leitor para que a próxima leitura recarregue o dado novo
+        load_data_ocorrencias.cache_clear()
+        logger.info(f"Novo registro salvo com sucesso no CSV: {new_df.shape[0]} linhas.")
+
+    except Exception as e:
+        logger.error(f"ERRO ao salvar novo registro no CSV: {e}")
+        # Lançar exceção ou tratar erro
+        raise

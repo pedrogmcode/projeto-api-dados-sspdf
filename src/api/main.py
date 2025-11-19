@@ -8,7 +8,7 @@ from typing import List
 from fastapi import FastAPI
 
 from src.config import API_DESCRIPTION, API_TITLE, API_VERSION, logger
-from src.data.schemas import OcorrenciasRequest, OcorrenciasResponse
+from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse
 from src.models.model_loader import filter_ocorrencias
 
 app = FastAPI(
@@ -73,3 +73,11 @@ def Ocorrencias(input_data: OcorrenciasRequest):
     # Alteramos o response_model do decorador para List[OcorrenciasResponse]
     return ocorrencias_filtradas
 '''
+#Endpoint para cadastro de quantidade de ocorrências
+@app.post("/Ocorrencias", response_model=List[OcorrenciasRequest])
+def Ocorrencias(input_data: OcorrenciasRequest):
+    """
+    Endpoint para cadastro de quantidade de ocorrências.
+    """
+    logger.info(f"Requisição POST recebida com Mês: {input_data.Mes}, Ano: {input_data.Ano}, Quantidade: {input_data.quantidade}, Natureza: {input_data.cod_natureza}, RA: {input_data.id_ra}")
+    
