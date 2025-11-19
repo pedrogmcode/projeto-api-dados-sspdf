@@ -20,9 +20,9 @@ class OcorrenciasRequest(BaseModel):
     id_ra: int = Field(..., ge=1, le=33, description="Identificador único da Região Administrativa (RA)")
     cod_natureza: int = Field(..., ge=1, le=32, description="Código da Natureza da ocorrência")
     quantidade: int = Field(..., ge=0, description="Quantidade de ocorrências")
-    Mes: int = Field(..., ge=1, le=12, description="Mês da ocorrência (1-12)")
-    Ano: int = Field(..., ge=2000, le=2100, description="Ano da ocorrência (2000-2100)")
-    class Config:json_schema_extra  = {"example": {"id_ra": 1, "cod_natureza": 1, "quantidade": 10, "Mes": 6, "Ano": 2024}}
+    mes: int = Field(..., ge=1, le=12, description="Mês da ocorrência (1-12)")
+    ano: int = Field(..., ge=2000, le=2100, description="Ano da ocorrência (2000-2100)")
+    class Config:json_schema_extra  = {"example": {"id_ra": 1, "cod_natureza": 1, "quantidade": 10, "mes": 6, "ano": 2024}}
 
 '''
 # --- VERSÃO ANTERIOR SEM ENUMERAÇÃO --- ALTERADO POR CASIMIRO EM 17-11-2025
@@ -76,3 +76,7 @@ class OcorrenciasResponse(BaseModel):
                 "Mes": 6, "Ano": 2024,
                 "Quantidade": 10
                     }})
+
+# Schema de Resposta de Sucesso para o POST (Confirmação)
+class SuccessMessage(BaseModel):
+    message: str = Field(..., description="Mensagem de sucesso da operação")

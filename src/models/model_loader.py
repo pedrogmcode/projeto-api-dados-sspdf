@@ -5,7 +5,7 @@ from typing import List
 
 import pandas as pd
 
-from src.config import DATA_DIR, logger
+from src.config import DATA_DIR, DATA_DIR_COMPLETO, logger
 from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse
 
 
@@ -91,7 +91,7 @@ def save_new_record(new_df: pd.DataFrame):
     try:
         # Escreve o novo DataFrame no arquivo
         new_df.to_csv(
-            DATA_DIR, 
+            DATA_DIR_COMPLETO, 
             mode='a', # Abre o arquivo em modo 'append' (adicionar ao final)
             sep=';', 
             encoding='utf-8', 

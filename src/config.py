@@ -9,8 +9,9 @@ from pathlib import Path
 # CAMINHOS
 # Diretório base do projeto
 BASE_DIR = Path(__file__).parent.parent  # Dois níveis acima do arquivo atual
-# Caminho para o arquivo de dados CSV
+# Caminho para os arquivos de dados CSV
 DATA_DIR = BASE_DIR / "src" / "data" / "crimes_df_ssp_2024.csv"
+DATA_DIR_COMPLETO = BASE_DIR / "src" / "data" / "src/data/dados_consolidados_ras_completo.csv"
 
 
 # Informações da API

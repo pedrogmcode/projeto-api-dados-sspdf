@@ -3,13 +3,15 @@
 # Autor: Casimiro
 # Data: 2025-11-15
 
+import random
 from typing import List
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 
 from src.config import API_DESCRIPTION, API_TITLE, API_VERSION, logger
-from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse
+from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse, SuccessMessage
 from src.models.model_loader import filter_ocorrencias
+from src.services import ocorrencias_service
 
 app = FastAPI(
     title=API_TITLE,
@@ -73,11 +75,26 @@ def Ocorrencias(input_data: OcorrenciasRequest):
     # Alteramos o response_model do decorador para List[OcorrenciasResponse]
     return ocorrencias_filtradas
 '''
-#Endpoint para cadastro de quantidade de ocorrências
-@app.post("/Ocorrencias", response_model=List[OcorrenciasRequest])
-def Ocorrencias(input_data: OcorrenciasRequest):
+# Endpoint para cadastro de quantidade de ocorrências (POST)
+@app.post("/ocorrencias", 
+          response_model=SuccessMessage, 
+          status_code=status.HTTP_201_CREATED,
+          summary="Cadastra novas ocorrências.")
+def adicionar_ocorrencias(input_data: OcorrenciasRequest):
     """
-    Endpoint para cadastro de quantidade de ocorrências.
+    Recebe os dados de ocorrências, valida o formato e registra no CSV.
+    Retorna objeto salvo.
     """
-    logger.info(f"Requisição POST recebida com Mês: {input_data.Mes}, Ano: {input_data.Ano}, Quantidade: {input_data.quantidade}, Natureza: {input_data.cod_natureza}, RA: {input_data.id_ra}")
+    try:
+        # Delega a lógica de persistência para a camada de Serviço
+        ocorrencias_service.cadatrar_ocorrencias(input_data)
+        
+        # Retorna o modelo de resposta de sucesso
+        return SuccessMessage(message="Ocorrências registradas com sucesso!")
     
+    except Exception as e:
+        # Se ocorrer um erro durante a escrita do CSV, retorna 500
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Falha ao registrar a ocorrências: {e}"
+        )
