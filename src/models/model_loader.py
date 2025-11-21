@@ -2,17 +2,19 @@
 
 from functools import lru_cache
 from typing import List
-
+from pathlib import Path
 import pandas as pd
 
-from src.config import DATA_DIR, DATA_DIR_COMPLETO_NORMALIZADO, logger, BASE_DIR
-from pathlib import Path
+from src.config import (
+    DATA_DIR_CONSOLIDADO,
+    DATA_DIR_NATUREZA,
+    DATA_DIR_RA,
+    DATA_DIR_COMPLETO_NORMALIZADO, # Necessário para save_new_record
+    logger
+)
+# from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse --> usados no Service
 
-from src.config import DATA_DIR, DATA_DIR_COMPLETO_NORMALIZADO, DATA_DIR_NATUREZA, DATA_DIR_RA, logger
-from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse
-
-
-
+'''
 # Carrega o dataset de ocorrências do DF em memória.
 # Retorna um DataFrame com nomes de colunas padronizados (snake_case).
 @lru_cache(maxsize=1)
@@ -86,6 +88,7 @@ def filter_ocorrencias(request: OcorrenciasRequest) -> List[OcorrenciasResponse]
     response_list = [OcorrenciasResponse(**item) for item in dados_filtrados_dict]
 
     return response_list
+'''
 
 # Função para inserir novos dados no CSV
 def save_new_record(new_df: pd.DataFrame):
@@ -102,8 +105,13 @@ def save_new_record(new_df: pd.DataFrame):
             header=False, # Não escreve o cabeçalho novamente
             index=False   # Não escreve o índice do DataFrame
         )
-        # Limpa o cache do leitor para que a próxima leitura recarregue o dado novo
-        load_data_ocorrencias.cache_clear()
+
+        '''# Limpa o cache do leitor para que a próxima leitura recarregue o dado novo
+        load_data_ocorrencias.cache_clear()'''
+        # Linhas CORRIGIDAS (deve limpar as novas funções):
+        load_denormalized_data.cache_clear()
+        load_consolidated_data.cache_clear()
+
         logger.info(f"Novo registro salvo com sucesso no CSV: {new_df.shape[0]} linhas.")
 
     except Exception as e:
@@ -114,10 +122,10 @@ def save_new_record(new_df: pd.DataFrame):
 #Carregar a lista de Naturezas disponíveis
 @lru_cache(maxsize=1)
 def load_naturezas() -> pd.DataFrame:
-    logger.info(f"Tentando carregar dados de naturezas do caminho: {BASE_DIR / 'src' / 'data' / 'tabela_natureza_ocorrencia.csv'}")
+    logger.info(f"Tentando carregar dados de naturezas do caminho: {DATA_DIR_NATUREZA}")
     try:
         df = pd.read_csv(
-            BASE_DIR / "src" / "data" / "tabela_natureza_ocorrencia.csv",
+            DATA_DIR_NATUREZA / "src" / "data" / "tabela_natureza_ocorrencia.csv",
             sep=';',
             encoding='latin1')
 
@@ -131,7 +139,7 @@ def load_naturezas() -> pd.DataFrame:
         return df
 
     except FileNotFoundError:
-        logger.error(f"ERRO: Arquivo CSV de naturezas não encontrado em {BASE_DIR / 'src' / 'data' / 'tabela_natureza_ocorrencia.csv'}. Verifique o caminho.")
+        logger.error(f"ERRO: Arquivo CSV de naturezas não encontrado em {DATA_DIR_NATUREZA}. Verifique o caminho.")
         return pd.DataFrame()
     except Exception as e:
         logger.error(f"ERRO inesperado ao carregar ou processar CSV de naturezas: {e}")

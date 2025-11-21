@@ -8,9 +8,10 @@ from typing import List
 
 from fastapi import FastAPI, HTTPException, status, Path, Query
 
-from src.config import API_DESCRIPTION, API_TITLE, API_VERSION, logger
+from src.config import settings, API_DESCRIPTION, API_TITLE, API_VERSION, logger 
+from fastapi.middleware.cors import CORSMiddleware # <--- NOVO IMPORT
 from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse, SuccessMessage, NaturezaResponse, Ocorrencias_Nomes_Response, OcorrenciasMediaResponse
-from src.models.model_loader import filter_ocorrencias
+#from src.models.model_loader import filter_ocorrencias
 from src.services import ocorrencias_service
 from src.services.ocorrencias_service import get_ocorrencias_nomes_filtradas, get_media_historica
 
@@ -21,7 +22,26 @@ app = FastAPI(
     version=API_VERSION
 )
 
-# Endpoint raiz
+# ----------------------------
+# --- CONFIGURAÇÃO DO CORS ---
+# ----------------------------
+
+# Converte a string de origens do .env para uma lista de Python
+origins = settings.CORS_ORIGINS.split(',')
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,             # Lista de domínios permitidos (lidos do .env)
+    allow_credentials=True,            # Permite cookies e cabeçalhos de autorização
+    allow_methods=["*"],               # Permite todos os métodos (GET, POST, etc.)
+    allow_headers=["*"],               # Permite todos os cabeçalhos
+)
+
+
+# ---------------------
+# --- Endpoint raiz ---
+# ---------------------
+
 @app.get("/")
 def root():
     logger.info("Endpoint raiz acessado")
@@ -29,8 +49,10 @@ def root():
         "message": "API Dados de Segurança Pública funcionando!",
         "version": API_VERSION
     }
+# -----------------------------
+# --- Health Check Endpoint ---
+# -----------------------------
 
-# Health Check Endpoint
 @app.get("/health")
 def health_check():
     logger.info("Health check realizado!")
@@ -107,7 +129,7 @@ def adicionar_ocorrencias(input_data: OcorrenciasRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Falha ao registrar a ocorrências: {e}"
         )
-    
+
 #Endpoint para busca das naturezas disponíveis
 @app.get("/natureza/{codigo}", response_model=NaturezaResponse)
 def get_natureza(codigo: int = Path(..., gt=0, description="Código da natureza da ocorrência")):
