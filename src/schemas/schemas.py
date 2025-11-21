@@ -80,3 +80,17 @@ class OcorrenciasResponse(BaseModel):
 # Schema de Resposta de Sucesso para o POST (Confirmação)
 class SuccessMessage(BaseModel):
     message: str = Field(..., description="Mensagem de sucesso da operação")
+
+
+#Schema de Requisição Natureza
+class NaturezaRequest(BaseModel):
+    codigo: int = Field(
+        ...,
+        gt=0,
+        description="Código da Natureza da ocorrência"
+        )
+
+#Schema de Resposta Natureza
+class NaturezaResponse(BaseModel):
+    cod_natureza: int = Field(..., description="Código da Natureza da ocorrência")
+    natureza: str = Field(..., description="Natureza da ocorrência")
