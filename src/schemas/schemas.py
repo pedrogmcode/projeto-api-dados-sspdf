@@ -8,7 +8,9 @@ from typing import Optional
 from typing import List
 from enum import Enum
 
+# ---------------------------
 # --- CLASSE HEALTH CHECK ---
+# ---------------------------
 class HealthCheck(BaseModel):
     status: str = Field(Optional, description="Status da API")
     service: str = Field(Optional, description="Nome do serviço")
@@ -24,20 +26,9 @@ class OcorrenciasRequest(BaseModel):
     ano: int = Field(..., ge=2000, le=2100, description="Ano da ocorrência (2000-2100)")
     class Config:json_schema_extra  = {"example": {"id_ra": 1, "cod_natureza": 1, "quantidade": 10, "mes": 6, "ano": 2024}}
 
-'''
-# --- VERSÃO ANTERIOR SEM ENUMERAÇÃO --- ALTERADO POR CASIMIRO EM 17-11-2025
-# Esquema de OUTPUT (O que a API retorna para CADA ocorrência)
-# Os nomes dos campos devem refletir suas colunas do CSV após padronização,
-# mas usando a notação CaseSensitive do Pydantic (ex: Natureza, Mes)
-class OcorrenciasResponse(BaseModel):
-    id: int = Field(..., description="Identificador único da ocorrência")
-    Natureza: str = Field(..., description="Natureza da ocorrência")
-    Mes: int = Field(..., ge=1, le=12, description="Mês da ocorrência (1-12)")
-    Ano: int = Field(..., ge=2000, le=2100, description="Ano da ocorrência (2000-2100)")
-    Quantidade: int = Field(..., description="Quantidade de ocorrências")
-    class Config: json_schema_extra  = {"example": {"id": 1, "Natureza": "Roubo", "Mes": 6, "Ano": 2024, "Quantidade": 10}}
-'''
+# ----------------------------------------
 # --- CLASSE ENUMERADA (Valores Fixos) ---
+# ----------------------------------------
 class NaturezaOcorrencia(str, Enum):
     HOMICIDIO = "HOMICIDIO"
     FEMINICIDIO = "FEMINICIDIO"
@@ -59,7 +50,10 @@ class NaturezaOcorrencia(str, Enum):
     POSSE_PORTE_DE_ARMA_DE_FOGO = "POSSE/PORTE DE ARMA DE FOGO"
     LOCALIZACAO_DE_VEICULO_FURTADO_OU_ROUBADO = "LOCALIZACÃO DE VEICULO FURTADO OU ROUBADO"
 
+# ------------------------------------
 # --- CLASSE OCORRÊNCIAS RESPONSE  ---
+# ------------------------------------
+
 class OcorrenciasResponse(BaseModel):
     id: int = Field(..., description="Identificador único da ocorrência")
     # ATUALIZAÇÃO SINTÁTICA: Usando Enum para Natureza
@@ -67,7 +61,7 @@ class OcorrenciasResponse(BaseModel):
     Mes: int = Field(..., ge=1, le=12, description="Mês da ocorrência (1-12)")
     Ano: int = Field(..., ge=2000, le=2100, description="Ano da ocorrência (2000-2100)")
     Quantidade: int = Field(..., description="Quantidade de ocorrências")
-    # ATUALIZAÇÃO SINTÁTICA: Usando model_config (Pydantic v2)
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -77,6 +71,65 @@ class OcorrenciasResponse(BaseModel):
                 "Quantidade": 10
                     }})
 
+# -------------------------------------------------------
 # Schema de Resposta de Sucesso para o POST (Confirmação)
+# -------------------------------------------------------
+
 class SuccessMessage(BaseModel):
     message: str = Field(..., description="Mensagem de sucesso da operação")
+
+# -----------------------------------------------------------
+# --- CLASSE OCORRÊNCIAS COM NOMES RESPONSE (OUTPUT: GET) ---
+# -----------------------------------------------------------
+
+class Ocorrencias_Nomes_Response(BaseModel):
+    MES: int = Field(..., ge=1, le=12, description="Mês da ocorrência")
+    ANO: int = Field(..., ge=2000, le=2100, description="Ano da ocorrência")
+    QUANTIDADE: int = Field(..., description="Quantidade de ocorrências")
+    Natureza: str = Field(..., description="Nome descritivo da Natureza da ocorrência")
+    RegiaoAdministrativa: str = Field(..., description="Nome da Região Administrativa (RA)")
+    ID_RA: int = Field(..., description="ID da Região Administrativa (RA)")
+    COD_NATUREZA: int = Field(..., description="Código da Natureza da ocorrência")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "MES": 6,
+                "ANO": 2024,
+                "QUANTIDADE": 15,
+                "Natureza": "HOMICÍDIO",
+                "RegiaoAdministrativa": "PLANO PILOTO",
+                "ID_RA": 14,
+                "COD_NATUREZA": 7
+            }
+        }
+    )
+
+# --------------------------------------------------------------------------
+# --- CLASSE OCORRÊNCIAS MÉDIA RESPONSE (OUTPUT: GET /ocorrencias_media) ---
+# --------------------------------------------------------------------------
+
+class OcorrenciasMediaResponse(BaseModel):
+    MES: int = Field(..., ge=1, le=12, description="Mês da ocorrência analisada")
+    ANO: int = Field(..., ge=2000, le=2100, description="Ano da ocorrência analisada")
+    Natureza: str = Field(..., description="Nome descritivo da Natureza da ocorrência")
+    RegiaoAdministrativa: str = Field(..., description="Nome da Região Administrativa (RA)")
+    Quantidade_Atual: int = Field(..., description="Quantidade de ocorrências no mês/ano/local específico.")
+    Media_Historica_Mes: float = Field(..., description="Média da Quantidade para esta Natureza/RA, considerando o Mês e todos os Anos.")
+    ID_RA: int = Field(..., description="ID da Região Administrativa (RA)")
+    COD_NATUREZA: int = Field(..., description="Código da Natureza da ocorrência")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "MES": 6,
+                "ANO": 2024,
+                "Natureza": "HOMICÍDIO",
+                "RegiaoAdministrativa": "PLANO PILOTO",
+                "Quantidade_Atual": 15,
+                "Media_Historica_Mes": 12.55,
+                "ID_RA": 14,
+                "COD_NATUREZA": 7
+            }
+        }
+    )

@@ -6,12 +6,14 @@
 import random
 from typing import List
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Query
 
 from src.config import API_DESCRIPTION, API_TITLE, API_VERSION, logger
-from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse, SuccessMessage
+from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse, SuccessMessage, Ocorrencias_Nomes_Response, OcorrenciasMediaResponse
 from src.models.model_loader import filter_ocorrencias
 from src.services import ocorrencias_service
+from src.services.ocorrencias_service import get_ocorrencias_nomes_filtradas, get_media_historica
+
 
 app = FastAPI(
     title=API_TITLE,
@@ -37,8 +39,29 @@ def health_check():
         "service": API_TITLE,
         "version": API_VERSION
     }
+# --------------------------------------------
+# --- ENDPOINT DE CONSULTA COM NOMES (GET) ---
+# --------------------------------------------
 
-# Endpoint de Ocorrências (Requisição GET)
+@app.get("/ocorrencias_nomes", response_model=List[Ocorrencias_Nomes_Response])
+def ocorrencias_nomes(
+    # Query: Usado para definir parâmetros obrigatórios na URL
+    id_ra: int = Query(..., description="ID da Região Administrativa para filtro.", ge=1, le=33),
+    ano: int = Query(..., ge=2000, le=2100, description="Ano da ocorrência."),
+    mes: int = Query(..., ge=1, le=12, description="Mês da ocorrência."),
+):
+    logger.info(f"Consulta Nomes solicitada: ID_RA={id_ra}, Ano={ano}, Mês={mes}")
+
+    # Delega a filtragem para a camada de Serviço
+    dados_filtrados = get_ocorrencias_nomes_filtradas(id_ra=id_ra, ano=ano, mes=mes)
+
+    if not dados_filtrados:
+         # Retorna 404 Not Found se não houver resultados
+         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nenhuma ocorrência encontrada para os filtros fornecidos.")
+
+    return dados_filtrados
+
+'''# Endpoint de Ocorrências (Requisição GET)
 # Recebe Mês e Ano como query parameters, e retorna uma lista de ocorrências filtradas.
 @app.get("/Ocorrencias", response_model=List[OcorrenciasResponse])
 # FastAPI usa os parâmetros da URL para validar o Esquema Pydantic!
@@ -49,35 +72,21 @@ def Ocorrencias(Mes: int,Ano: int):
     # Adaptar a Requisição para a Função de Filtragem
     # A função filter_ocorrencias espera um objeto OcorrenciasRequest,
     # Necessário criar a partir dos parâmetros de consulta (Mes, Ano).
-    request_data = OcorrenciasRequest(Mes=Mes, Ano=Ano)
+    request_data = OcorrenciasRequest(mes=Mes, ano=Ano)
 
     # Chamar a função de filtragem
     ocorrencias_filtradas = filter_ocorrencias(request_data)
 
     # Retorna a lista de objetos Pydantic
     return ocorrencias_filtradas
-
 '''
-# Inutilizado por Casimiro em 17-11-2025
 
-# Endpoint de Ocorrências (POST)
-# Recebe Mês e Ano, e retorna um exemplo de ocorrência validada.
-# Em um projeto real, esta função consultaria o DataFrame ou um modelo.
+# --------------------------------------------
+# --- ENDPOINT DE CADASTRO DE OCORRENCIAS (POST) ---
+# --------------------------------------------
 
-# Endpoint de Ocorrências (Requisição POST)
-# Recebe Mês e Ano, e retorna uma lista de ocorrências filtradas.
-@app.post("/Ocorrencias", response_model=List[OcorrenciasResponse])
-def Ocorrencias(input_data: OcorrenciasRequest):
-    logger.info(f"Ocorrências solicitadas com Mês: {input_data.Mes}, Ano: {input_data.Ano}")
-    # Chama a função de filtragem
-    ocorrencias_filtradas = filter_ocorrencias(input_data)
-    # Retorna a lista de objetos Pydantic
-    # Alteramos o response_model do decorador para List[OcorrenciasResponse]
-    return ocorrencias_filtradas
-'''
-# Endpoint para cadastro de quantidade de ocorrências (POST)
-@app.post("/ocorrencias", 
-          response_model=SuccessMessage, 
+@app.post("/ocorrencias",
+          response_model=SuccessMessage,
           status_code=status.HTTP_201_CREATED,
           summary="Cadastra novas ocorrências.")
 def adicionar_ocorrencias(input_data: OcorrenciasRequest):
@@ -88,13 +97,46 @@ def adicionar_ocorrencias(input_data: OcorrenciasRequest):
     try:
         # Delega a lógica de persistência para a camada de Serviço
         ocorrencias_service.cadatrar_ocorrencias(input_data)
-        
+
         # Retorna o modelo de resposta de sucesso
         return SuccessMessage(message="Ocorrências registradas com sucesso!")
-    
+
     except Exception as e:
         # Se ocorrer um erro durante a escrita do CSV, retorna 500
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Falha ao registrar a ocorrências: {e}"
         )
+
+
+# ----------------------------------------------------
+# --- ENDPOINT DE CÁLCULO DE MÉDIA HISTÓRICA (GET) ---
+# ----------------------------------------------------
+
+@app.get("/ocorrencias_media", response_model=OcorrenciasMediaResponse)
+def ocorrencias_media(
+    # Parâmetros obrigatórios e validados na URL
+    id_ra: int = Query(..., description="ID da Região Administrativa para filtro.", ge=1, le=33),
+    ano: int = Query(..., ge=2000, le=2100, description="Ano da ocorrência."),
+    mes: int = Query(..., ge=1, le=12, description="Mês da ocorrência."),
+    cod_natureza: int = Query(..., description="Código da Natureza para cálculo da média.", ge=1)
+):
+    logger.info(f"Consulta Média Histórica solicitada: RA={id_ra}, Ano={ano}, Mês={mes}, Natureza={cod_natureza}")
+
+    try:
+        # Delega o cálculo para a camada de Serviço
+        dados_media = get_media_historica(
+            id_ra=id_ra,
+            ano=ano,
+            mes=mes,
+            cod_natureza=cod_natureza
+        )
+        return dados_media
+
+    except ValueError as e:
+        # Trata o erro de 404 Not Found se o filtro não encontrar dados
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        logger.error(f"Erro inesperado no cálculo da média: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erro interno ao calcular a média histórica.")
+

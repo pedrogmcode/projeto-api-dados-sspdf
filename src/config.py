@@ -12,6 +12,8 @@ BASE_DIR = Path(__file__).parent.parent  # Dois níveis acima do arquivo atual
 # Caminho para os arquivos de dados CSV
 DATA_DIR = BASE_DIR / "src" / "data" / "crimes_df_ssp_2024.csv"
 DATA_DIR_COMPLETO_NORMALIZADO = BASE_DIR / "src" / "data" / "dados_consolidados_normalizado.csv"
+DATA_DIR_NATUREZA = BASE_DIR / "src" / "data" / "tabela_natureza_ocorrencia.csv"
+DATA_DIR_RA = BASE_DIR / "src" / "data" / "tabela_ra_ocorrencia.csv"
 
 # Informações da API
 API_TITLE = "API Dados de Segurança Pública SSP/DF"
