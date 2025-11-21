@@ -118,9 +118,9 @@ def load_naturezas() -> pd.DataFrame:
     try:
         df = pd.read_csv(
             BASE_DIR / "src" / "data" / "tabela_natureza_ocorrencia.csv",
-            sep=';', 
+            sep=';',
             encoding='latin1')
-        
+
         #Padronização: minúsculo e snake_case para acesso seguro
         df.columns = df.columns.str.lower().str.replace(' ', '_')
 
@@ -146,7 +146,7 @@ def buscar_natureza(cod_natureza: str) -> str | None:
     #Verifica se o DataFrame está vazio
     if df_naturezas.empty:
         return None
-    
+
     try:
         #Converte o código para int para comparação
         cod_natureza_int = int(cod_natureza)
@@ -154,9 +154,9 @@ def buscar_natureza(cod_natureza: str) -> str | None:
 
         if resultado.empty:
             return None
-        
+
         return resultado.iloc[0]['natureza']
-    
+
     except ValueError:
         #Se não for possível converter para int, retorna None
         logger.warning(f"Código de natureza inválido (não é um número): {cod_natureza}")
