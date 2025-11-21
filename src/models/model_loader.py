@@ -5,6 +5,7 @@ from typing import List
 
 import pandas as pd
 
+from src.config import DATA_DIR, DATA_DIR_COMPLETO_NORMALIZADO, logger, BASE_DIR
 from pathlib import Path
 
 from src.config import DATA_DIR, DATA_DIR_COMPLETO_NORMALIZADO, DATA_DIR_NATUREZA, DATA_DIR_RA, logger
@@ -109,6 +110,57 @@ def save_new_record(new_df: pd.DataFrame):
         logger.error(f"ERRO ao salvar novo registro no CSV: {e}")
         # Lançar exceção ou tratar erro
         raise
+
+#Carregar a lista de Naturezas disponíveis
+@lru_cache(maxsize=1)
+def load_naturezas() -> pd.DataFrame:
+    logger.info(f"Tentando carregar dados de naturezas do caminho: {BASE_DIR / 'src' / 'data' / 'tabela_natureza_ocorrencia.csv'}")
+    try:
+        df = pd.read_csv(
+            BASE_DIR / "src" / "data" / "tabela_natureza_ocorrencia.csv",
+            sep=';', 
+            encoding='latin1')
+        
+        #Padronização: minúsculo e snake_case para acesso seguro
+        df.columns = df.columns.str.lower().str.replace(' ', '_')
+
+        #Converte COD_NATUREZA para int para evitar problemas de comparação
+        df['cod_natureza'] = df['cod_natureza'].astype(int)
+
+        logger.info(f"Dados de naturezas carregados com sucesso: {df.shape[0]} linhas.")
+        return df
+
+    except FileNotFoundError:
+        logger.error(f"ERRO: Arquivo CSV de naturezas não encontrado em {BASE_DIR / 'src' / 'data' / 'tabela_natureza_ocorrencia.csv'}. Verifique o caminho.")
+        return pd.DataFrame()
+    except Exception as e:
+        logger.error(f"ERRO inesperado ao carregar ou processar CSV de naturezas: {e}")
+        return pd.DataFrame()
+
+
+# Função para carregar a lista de Naturezas disponíveis
+def buscar_natureza(cod_natureza: str) -> str | None:
+    """Busca a natureza pelo código. Retorna None se não encontrar."""
+    df_naturezas = load_naturezas()
+
+    #Verifica se o DataFrame está vazio
+    if df_naturezas.empty:
+        return None
+    
+    try:
+        #Converte o código para int para comparação
+        cod_natureza_int = int(cod_natureza)
+        resultado = df_naturezas[df_naturezas['cod_natureza'] == cod_natureza_int]
+
+        if resultado.empty:
+            return None
+        
+        return resultado.iloc[0]['natureza']
+    
+    except ValueError:
+        #Se não for possível converter para int, retorna None
+        logger.warning(f"Código de natureza inválido (não é um número): {cod_natureza}")
+        return None
 
 
 '''

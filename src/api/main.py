@@ -6,10 +6,10 @@
 import random
 from typing import List
 
-from fastapi import FastAPI, HTTPException, status, Query
+from fastapi import FastAPI, HTTPException, status, Path, Query
 
 from src.config import API_DESCRIPTION, API_TITLE, API_VERSION, logger
-from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse, SuccessMessage, Ocorrencias_Nomes_Response, OcorrenciasMediaResponse
+from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse, SuccessMessage, NaturezaResponse, Ocorrencias_Nomes_Response, OcorrenciasMediaResponse
 from src.models.model_loader import filter_ocorrencias
 from src.services import ocorrencias_service
 from src.services.ocorrencias_service import get_ocorrencias_nomes_filtradas, get_media_historica
@@ -107,6 +107,21 @@ def adicionar_ocorrencias(input_data: OcorrenciasRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Falha ao registrar a ocorrências: {e}"
         )
+    
+#Endpoint para busca das naturezas disponíveis
+@app.get("/natureza/{codigo}", response_model=NaturezaResponse)
+def get_natureza(codigo: int = Path(..., gt=0, description="Código da natureza da ocorrência")):
+
+    """
+    Retorna a natureza correspondente ao código informado.
+    Converte para string porque a função buscar_natureza espera receber uma string.
+    """
+    natureza = buscar_natureza(str(codigo))
+
+    if natureza is None:
+        raise HTTPException(status_code=404, detail="Código de natureza não encontrado")
+
+    return NaturezaResponse(cod_natureza=codigo, natureza=natureza)
 
 
 # ----------------------------------------------------
@@ -139,4 +154,5 @@ def ocorrencias_media(
     except Exception as e:
         logger.error(f"Erro inesperado no cálculo da média: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Erro interno ao calcular a média histórica.")
+
 
