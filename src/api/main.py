@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException, status, Path, Query
 
 from src.config import settings, API_DESCRIPTION, API_TITLE, API_VERSION, logger 
 from fastapi.middleware.cors import CORSMiddleware # <--- NOVO IMPORT
+from src.models.model_loader import buscar_natureza
 from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse, SuccessMessage, NaturezaResponse, Ocorrencias_Nomes_Response, OcorrenciasMediaResponse
 #from src.models.model_loader import filter_ocorrencias
 from src.services import ocorrencias_service
