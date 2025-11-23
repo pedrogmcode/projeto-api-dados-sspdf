@@ -530,3 +530,6 @@ touch  tests/__init__.py
 #### Enviar o novo branch para o repositório remoto
 
 ```git push -u origin chore/config-qualidade```
+
+#### Executar testes
+```git push -u origin chore/config-qualidade```

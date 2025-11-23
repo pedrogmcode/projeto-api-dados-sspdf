@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException, status, Path, Query
 
 from src.config import settings, API_DESCRIPTION, API_TITLE, API_VERSION, logger 
 from fastapi.middleware.cors import CORSMiddleware # <--- NOVO IMPORT
+from src.models.model_loader import buscar_natureza
 from src.schemas.schemas import OcorrenciasRequest, OcorrenciasResponse, SuccessMessage, NaturezaResponse, Ocorrencias_Nomes_Response, OcorrenciasMediaResponse
 #from src.models.model_loader import filter_ocorrencias
 from src.services import ocorrencias_service
@@ -82,26 +83,6 @@ def ocorrencias_nomes(
          raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nenhuma ocorrência encontrada para os filtros fornecidos.")
 
     return dados_filtrados
-
-'''# Endpoint de Ocorrências (Requisição GET)
-# Recebe Mês e Ano como query parameters, e retorna uma lista de ocorrências filtradas.
-@app.get("/Ocorrencias", response_model=List[OcorrenciasResponse])
-# FastAPI usa os parâmetros da URL para validar o Esquema Pydantic!
-# A função recebe Mes e Ano diretamente, mas a validação do Pydantic (ge, le) funciona.
-def Ocorrencias(Mes: int,Ano: int):
-    logger.info(f"Ocorrências solicitadas com Mês: {Mes}, Ano: {Ano}")
-
-    # Adaptar a Requisição para a Função de Filtragem
-    # A função filter_ocorrencias espera um objeto OcorrenciasRequest,
-    # Necessário criar a partir dos parâmetros de consulta (Mes, Ano).
-    request_data = OcorrenciasRequest(mes=Mes, ano=Ano)
-
-    # Chamar a função de filtragem
-    ocorrencias_filtradas = filter_ocorrencias(request_data)
-
-    # Retorna a lista de objetos Pydantic
-    return ocorrencias_filtradas
-'''
 
 # --------------------------------------------
 # --- ENDPOINT DE CADASTRO DE OCORRENCIAS (POST) ---
