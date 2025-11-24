@@ -125,7 +125,7 @@ def load_naturezas() -> pd.DataFrame:
     logger.info(f"Tentando carregar dados de naturezas do caminho: {DATA_DIR_NATUREZA}")
     try:
         df = pd.read_csv(
-            DATA_DIR_NATUREZA / "src" / "data" / "tabela_natureza_ocorrencia.csv",
+            DATA_DIR_NATUREZA,
             sep=';',
             encoding='latin1')
 
