@@ -207,13 +207,13 @@ $\sum_{a} I$: Contagem do número de meses/anos ($I$) que satisfazem a condiçã
 
 ```bash
 
+pytest src/api/tests/ -v
+
+```
+
 ## Autores
 
 * Micael Macedo Pereira da Trindade
 * Pedro Henrique de Magalhães Casimiro
 * Daniel Barrozo Lima
 * Pedro Guilherme Feitoza Melo
-
-pytest src/api/tests/ -v
-
-```
