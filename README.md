@@ -2,7 +2,7 @@
 
 Esta API de dados SSP-DF possibilita o acesso e objetanção de dados e métricas da base de dados de formato .csv obtida no site da Secretaria de Estado de Segurança Pública - SSP/DF: https://www.agenciabrasilia.df.gov.br/web/ssp/dados-por-regiao-administrativa#DF 
 
-Ela possibilita:
+Esas api, por meio de seus enpoints:
 * Fornece os códigos e nomes das Regiões Administrativas do DF
 * Fornece os códigos e as Naturezas das Ocorrências Policiais do DF entre 2020 e 2024
 * Fornece informações de ocorrências policiais (2020 e 2024) por Natureza da Ocorrência, Mẽs e Região Administrativa do Distrito Federal.
